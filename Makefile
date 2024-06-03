@@ -68,6 +68,7 @@ doc:
 
 arithmetic: rep-ring rep-field shamir semi2k-party.x semi-party.x mascot sy dealer-ring-party.x
 binary: rep-bin yao semi-bin-party.x tinier-party.x tiny-party.x ccd-party.x malicious-ccd-party.x real-bmr
+semi: semi2k-party.x
 
 all: overdrive she-offline
 arithmetic: semi-he gear

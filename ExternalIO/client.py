@@ -2,7 +2,7 @@ import platform
 import socket, ssl
 import struct
 import time
-from domains import *
+from ExternalIO.domains import *
 
 # The following function is either taken directly or derived from:
 # https://stackoverflow.com/questions/12248132/how-to-change-tcp-keepalive-timer-using-python-script
@@ -46,7 +46,7 @@ class Client:
                         (hostname, port_base + i))
                     break
                 except ConnectionRefusedError:
-                    if j < 60:
+                    if j < 300:
                         time.sleep(1)
                     else:
                         raise
@@ -59,13 +59,18 @@ class Client:
             octetStream(b'%d' % my_client_id).Send(plain_socket)
             self.sockets.append(ctx.wrap_socket(plain_socket,
                                                 server_hostname='P%d' % i))
-
+            
+            print(f"Connection done with party {i}...")
+            
         self.specification = octetStream()
         self.specification.Receive(self.sockets[0])
         type = self.specification.get_int(4)
         if type == ord('R'):
-            self.domain = Z2(self.specification.get_int(4))
-            self.clear_domain = Z2(self.specification.get_int(4))
+            # self.domain = Z2(self.specification.get_int(4))
+            # self.clear_domain = Z2(self.specification.get_int(4))
+            self.domain = Z2(64)
+            self.clear_domain = Z2(64)
+            
         elif type == ord('p'):
             self.domain = Fp(self.specification.get_bigint())
             self.clear_domain = self.domain
@@ -139,7 +144,7 @@ class octetStream:
         self.ptr = 0
 
     def store(self, value):
-        self.buf += struct.pack('<q', value)
+        self.buf += struct.pack('<i', value)
 
     def get_int(self, length):
         buf = self.consume(length)
@@ -165,6 +170,7 @@ class octetStream:
             return 0
 
     def consume(self, length):
-        self.ptr += length
         assert self.ptr <= len(self.buf)
+        self.ptr += length
+        
         return self.buf[self.ptr - length:self.ptr]
